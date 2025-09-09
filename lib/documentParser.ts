@@ -26,13 +26,13 @@ async function extractFromPDF(buffer: Buffer, mimeType: string): Promise<Documen
     const extractedText = data.text?.trim() || '';
     
     console.log('PDF extraction result:', {
-      wordCount: extractedText.split(/\s+/).filter(word => word.length > 0).length,
+      wordCount: extractedText.split(/\s+/).filter((word: string) => word.length > 0).length,
       textPreview: extractedText.substring(0, 200),
       pages: data.numpages
     });
     
     // Check if we got meaningful text (more than just whitespace/minimal content)
-    const wordCount = extractedText.split(/\s+/).filter(word => word.length > 0).length;
+    const wordCount = extractedText.split(/\s+/).filter((word: string) => word.length > 0).length;
     
     if (wordCount >= 10) {
       // Success with pdf-parse
@@ -72,7 +72,7 @@ async function extractFromDOCX(buffer: Buffer): Promise<DocumentParseResult> {
       };
     }
 
-    const wordCount = extractedText.split(/\s+/).filter(word => word.length > 0).length;
+    const wordCount = extractedText.split(/\s+/).filter((word: string) => word.length > 0).length;
     
     return {
       text: extractedText,
@@ -115,7 +115,7 @@ Return only the extracted text content without additional commentary.`;
       };
     }
 
-    const wordCount = extractedText.split(/\s+/).filter(word => word.length > 0).length;
+    const wordCount = extractedText.split(/\s+/).filter((word: string) => word.length > 0).length;
     
     return {
       text: extractedText.trim(),

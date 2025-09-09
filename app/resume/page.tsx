@@ -139,6 +139,9 @@ const ResumeAgent = () => {
               overallScore: 85,
               grade: 'A-',
               atsCompatibility: 82,
+              initialAtsScore: 75,
+              improvedAtsScore: 82,
+              atsImprovement: 7,
               strengths: [
                 'Strong technical skills portfolio',
                 'Relevant project experience', 

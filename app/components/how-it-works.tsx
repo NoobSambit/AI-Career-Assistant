@@ -1,22 +1,22 @@
 import React from 'react';
-import { Upload, Sparkles, Send } from 'lucide-react';
+import { Target, Upload, CheckCircle } from 'lucide-react';
 
 const HowItWorks = () => {
   const steps = [
     {
+      icon: Target,
+      title: 'Choose your tool',
+      description: 'Pick Resume, Interview, or Email based on your needs'
+    },
+    {
       icon: Upload,
-      title: 'Upload',
-      description: 'Drop your resume or paste a screenshot'
+      title: 'Add your content',
+      description: 'Upload your resume, enter interview prompts, or paste your email'
     },
     {
-      icon: Sparkles,
-      title: 'We enhance it',
-      description: 'AI analyzes and optimizes for ATS systems'
-    },
-    {
-      icon: Send,
-      title: 'You apply with confidence',
-      description: 'Get measurable improvements and more callbacks'
+      icon: CheckCircle,
+      title: 'Get ready-to-use output',
+      description: 'Receive clear, professional results you can use immediately'
     }
   ];
 
@@ -27,7 +27,7 @@ const HowItWorks = () => {
           How it works
         </h2>
         <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-          Three simple steps to transform your resume and land more interviews
+          Three simple steps to improve your job search materials
         </p>
       </div>
 

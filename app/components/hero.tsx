@@ -1,10 +1,102 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Play, Upload, Star } from 'lucide-react';
+import { Play, Upload, Star, MessageSquare, Mail, TrendingUp } from 'lucide-react';
 import { BRAND_NAME, TAGLINE } from '@/lib/brand';
 
 const Hero = () => {
+  const [activePreview, setActivePreview] = useState<'resume' | 'interview' | 'email'>('resume');
+
+  const previews = {
+    resume: {
+      label: 'Resume',
+      before: {
+        title: 'Before',
+        score: '42/100',
+        color: 'text-red-600 dark:text-red-400',
+        bgColor: 'bg-red-50 dark:bg-red-900/20',
+        borderColor: 'border-red-200 dark:border-red-800',
+        bars: [
+          { width: 'w-3/4', color: 'bg-gray-200 dark:bg-gray-600' },
+          { width: 'w-1/2', color: 'bg-gray-200 dark:bg-gray-600' },
+          { width: 'w-2/3', color: 'bg-gray-200 dark:bg-gray-600' }
+        ]
+      },
+      after: {
+        title: 'After',
+        score: '89/100',
+        color: 'text-green-600 dark:text-green-400',
+        bgColor: 'bg-green-50 dark:bg-green-900/20',
+        borderColor: 'border-green-200 dark:border-green-800',
+        bars: [
+          { width: 'w-full', color: 'bg-blue-200 dark:bg-blue-700' },
+          { width: 'w-5/6', color: 'bg-blue-200 dark:bg-blue-700' },
+          { width: 'w-4/5', color: 'bg-blue-200 dark:bg-blue-700' }
+        ]
+      },
+      tag: 'ATS Score:'
+    },
+    interview: {
+      label: 'Interview',
+      before: {
+        title: 'Before',
+        score: 'Rambling',
+        color: 'text-red-600 dark:text-red-400',
+        bgColor: 'bg-red-50 dark:bg-red-900/20',
+        borderColor: 'border-red-200 dark:border-red-800',
+        bars: [
+          { width: 'w-full', color: 'bg-gray-200 dark:bg-gray-600' },
+          { width: 'w-4/5', color: 'bg-gray-200 dark:bg-gray-600' },
+          { width: 'w-3/4', color: 'bg-gray-200 dark:bg-gray-600' }
+        ]
+      },
+      after: {
+        title: 'After',
+        score: 'STAR Method',
+        color: 'text-green-600 dark:text-green-400',
+        bgColor: 'bg-green-50 dark:bg-green-900/20',
+        borderColor: 'border-green-200 dark:border-green-800',
+        bars: [
+          { width: 'w-3/4', color: 'bg-indigo-200 dark:bg-indigo-700' },
+          { width: 'w-4/5', color: 'bg-indigo-200 dark:bg-indigo-700' },
+          { width: 'w-5/6', color: 'bg-indigo-200 dark:bg-indigo-700' }
+        ]
+      },
+      tag: 'Answer Quality:'
+    },
+    email: {
+      label: 'Email',
+      before: {
+        title: 'Before',
+        score: 'Wordy',
+        color: 'text-red-600 dark:text-red-400',
+        bgColor: 'bg-red-50 dark:bg-red-900/20',
+        borderColor: 'border-red-200 dark:border-red-800',
+        bars: [
+          { width: 'w-full', color: 'bg-gray-200 dark:bg-gray-600' },
+          { width: 'w-full', color: 'bg-gray-200 dark:bg-gray-600' },
+          { width: 'w-4/5', color: 'bg-gray-200 dark:bg-gray-600' }
+        ]
+      },
+      after: {
+        title: 'After',
+        score: 'Clear',
+        color: 'text-green-600 dark:text-green-400',
+        bgColor: 'bg-green-50 dark:bg-green-900/20',
+        borderColor: 'border-green-200 dark:border-green-800',
+        bars: [
+          { width: 'w-3/4', color: 'bg-teal-200 dark:bg-teal-700' },
+          { width: 'w-2/3', color: 'bg-teal-200 dark:bg-teal-700' },
+          { width: 'w-1/2', color: 'bg-teal-200 dark:bg-teal-700' }
+        ]
+      },
+      tag: 'Clarity:'
+    }
+  };
+
+  const currentPreview = previews[activePreview];
+
   return (
     <section className="max-w-6xl mx-auto px-4 py-16 lg:py-24">
       <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -17,7 +109,7 @@ const Hero = () => {
             </div>
             <span>•</span>
             <div className="flex items-center space-x-1">
-              <span>Avg +18 ATS points</span>
+              <span>3 job tools</span>
             </div>
             <span>•</span>
             <div className="flex items-center space-x-1">
@@ -32,27 +124,41 @@ const Hero = () => {
               {TAGLINE}
             </h1>
             <p className="text-lg lg:text-xl text-gray-600 dark:text-gray-300 leading-relaxed max-w-lg">
-              Upload your resume or a screenshot. Get a recruiter‑ready version with measurable ATS gains.
+              Resume Booster, Interview Coach, and Email Rewriter that make your applications clear and confident.
             </p>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Resume Booster</span>
+              <span className="px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">Interview Coach</span>
+              <span className="px-2.5 py-1 rounded-full bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400">Email Rewriter</span>
+            </div>
           </div>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Link
               href="/resume"
-              className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              aria-label="Upload and enhance your resume"
+              className="inline-flex items-center justify-center px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              aria-label="Open Resume Booster"
             >
               <Upload className="h-5 w-5 mr-2" />
-              Try it with your resume
+              Resume
             </Link>
-            <button
-              className="inline-flex items-center justify-center px-8 py-4 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500 font-semibold rounded-xl transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800"
-              aria-label="Watch demo video"
+            <Link
+              href="/interview"
+              className="inline-flex items-center justify-center px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              aria-label="Open Interview Coach"
             >
-              <Play className="h-5 w-5 mr-2" />
-              Watch 60‑sec demo
-            </button>
+              <MessageSquare className="h-5 w-5 mr-2" />
+              Interview
+            </Link>
+            <Link
+              href="/email"
+              className="inline-flex items-center justify-center px-6 py-4 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              aria-label="Open Email Rewriter"
+            >
+              <Mail className="h-5 w-5 mr-2" />
+              Email
+            </Link>
           </div>
 
           {/* Trust Line */}
@@ -61,36 +167,56 @@ const Hero = () => {
           </p>
         </div>
 
-        {/* Right Column - Media */}
+        {/* Right Column - Interactive Preview */}
         <div className="relative">
           <div className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-8 border border-gray-200 dark:border-gray-700">
             <div className="space-y-6">
+              {/* Preview Switcher */}
+              <div className="flex justify-center">
+                <div className="flex bg-white dark:bg-gray-800 rounded-lg p-1 border border-gray-200 dark:border-gray-600">
+                  {Object.entries(previews).map(([key, preview]) => (
+                    <button
+                      key={key}
+                      onClick={() => setActivePreview(key as 'resume' | 'interview' | 'email')}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
+                        activePreview === key
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                      }`}
+                    >
+                      {preview.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Before/After Preview */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400">Before</h4>
+                  <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400">{currentPreview.before.title}</h4>
                   <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 shadow-sm">
                     <div className="space-y-2">
-                      <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded w-3/4"></div>
-                      <div className="h-2 bg-gray-200 dark:bg-gray-600 rounded w-1/2"></div>
-                      <div className="h-2 bg-gray-200 dark:bg-gray-600 rounded w-2/3"></div>
+                      {currentPreview.before.bars.map((bar, index) => (
+                        <div key={index} className={`h-${index === 0 ? '3' : '2'} ${bar.color} rounded ${bar.width}`}></div>
+                      ))}
                     </div>
-                    <div className="mt-3 text-xs text-red-600 dark:text-red-400 font-medium">
-                      ATS Score: 42/100
+                    <div className={`mt-3 text-xs ${currentPreview.before.color} font-medium`}>
+                      {currentPreview.tag} {currentPreview.before.score}
                     </div>
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400">After</h4>
+                  <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400">{currentPreview.after.title}</h4>
                   <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 shadow-sm">
                     <div className="space-y-2">
-                      <div className="h-3 bg-blue-200 dark:bg-blue-700 rounded w-full"></div>
-                      <div className="h-2 bg-blue-200 dark:bg-blue-700 rounded w-5/6"></div>
-                      <div className="h-2 bg-blue-200 dark:bg-blue-700 rounded w-4/5"></div>
+                      {currentPreview.after.bars.map((bar, index) => (
+                        <div key={index} className={`h-${index === 0 ? '3' : '2'} ${bar.color} rounded ${bar.width}`}></div>
+                      ))}
                     </div>
-                    <div className="mt-3 text-xs text-green-600 dark:text-green-400 font-medium">
-                      ATS Score: 89/100 (+47)
+                    <div className={`mt-3 text-xs ${currentPreview.after.color} font-medium flex items-center`}>
+                      {currentPreview.tag} {currentPreview.after.score}
+                      <TrendingUp className="h-3 w-3 ml-1" />
                     </div>
                   </div>
                 </div>

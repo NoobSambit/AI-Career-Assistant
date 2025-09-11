@@ -5,15 +5,21 @@ import Link from 'next/link';
 const Testimonials = () => {
   const testimonials = [
     {
-      quote: "Got 3 callbacks in a week after +22 ATS score.",
+      quote: "Cleared ATS, got 3 callbacks in a week after using Resume Booster.",
       author: "Priya S.",
       role: "Product Manager",
       rating: 5
     },
     {
-      quote: "Finally got past the ATS filters. Landed my dream job!",
+      quote: "My answers finally clicked—2 on‑sites in a week with Interview Coach.",
       author: "Marcus T.",
       role: "Software Engineer",
+      rating: 5
+    },
+    {
+      quote: "Cold emails started getting replies after Email Rewriter polish.",
+      author: "Sarah L.",
+      role: "Sales Rep",
       rating: 5
     }
   ];
@@ -27,8 +33,8 @@ const Testimonials = () => {
     },
     {
       icon: TrendingUp,
-      value: '+18',
-      label: 'Avg ATS gain',
+      value: '3 tools',
+      label: 'Job search help',
       color: 'text-green-600 dark:text-green-400'
     },
     {
@@ -40,9 +46,9 @@ const Testimonials = () => {
   ];
 
   const tools = [
-    { name: 'Resume Booster', href: '/resume', description: 'ATS optimization' },
-    { name: 'Interview Coach', href: '/interview', description: 'STAR method prep' },
-    { name: 'Email Rewriter', href: '/email', description: 'Professional tone' }
+    { name: 'Resume', href: '/resume', description: 'ATS optimization' },
+    { name: 'Interview', href: '/interview', description: 'STAR method prep' },
+    { name: 'Email', href: '/email', description: 'Professional tone' }
   ];
 
   return (
@@ -77,7 +83,7 @@ const Testimonials = () => {
         </div>
 
         {/* Testimonials */}
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-3 gap-6">
           {testimonials.map((testimonial, index) => (
             <div key={index} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow duration-200">
               <div className="flex items-start space-x-1 mb-4">
@@ -86,7 +92,7 @@ const Testimonials = () => {
                 ))}
               </div>
               
-              <blockquote className="text-gray-900 dark:text-white mb-4 text-lg leading-relaxed">
+              <blockquote className="text-gray-900 dark:text-white mb-4 leading-relaxed">
                 "{testimonial.quote}"
               </blockquote>
               

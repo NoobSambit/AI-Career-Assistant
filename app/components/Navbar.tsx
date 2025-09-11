@@ -15,9 +15,9 @@ const Navbar = () => {
 
   const navItems = [
     { path: '/', label: 'Home', icon: Brain },
-    { path: '/resume', label: 'Resume Booster', icon: User },
-    { path: '/interview', label: 'Interview Coach', icon: MessageSquare },
-    { path: '/email', label: 'Email Rewriter', icon: Mail },
+    { path: '/resume', label: 'Resume', icon: User },
+    { path: '/interview', label: 'Interview', icon: MessageSquare, isNew: true },
+    { path: '/email', label: 'Email', icon: Mail },
   ];
 
   return (
@@ -36,11 +36,11 @@ const Navbar = () => {
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-1">
-            {navItems.map(({ path, label, icon: Icon }) => (
+            {navItems.map(({ path, label, icon: Icon, isNew }) => (
               <Link
                 key={path}
                 href={path}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 ${
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 relative ${
                   isActive(path)
                     ? 'bg-blue-100 text-blue-700 shadow-sm'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
@@ -48,6 +48,9 @@ const Navbar = () => {
               >
                 <Icon className="h-4 w-4" />
                 <span className="font-medium">{label}</span>
+                {isNew && (
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></div>
+                )}
               </Link>
             ))}
           </div>
@@ -55,11 +58,11 @@ const Navbar = () => {
           {/* Mobile Menu */}
           <div className="md:hidden">
             <div className="flex flex-col space-y-1">
-              {navItems.slice(1).map(({ path, label, icon: Icon }) => (
+              {navItems.slice(1).map(({ path, label, icon: Icon, isNew }) => (
                 <Link
                   key={path}
                   href={path}
-                  className={`flex items-center space-x-2 px-3 py-2 text-sm rounded-md transition-all duration-300 ${
+                  className={`flex items-center space-x-2 px-3 py-2 text-sm rounded-md transition-all duration-300 relative ${
                     isActive(path)
                       ? 'bg-blue-100 text-blue-700'
                       : 'text-gray-600 hover:bg-gray-100'
@@ -67,6 +70,9 @@ const Navbar = () => {
                 >
                   <Icon className="h-3 w-3" />
                   <span>{label}</span>
+                  {isNew && (
+                    <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                  )}
                 </Link>
               ))}
             </div>

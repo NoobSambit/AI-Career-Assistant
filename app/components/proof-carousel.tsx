@@ -1,49 +1,107 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react';
+import { ChevronLeft, ChevronRight, TrendingUp, MessageSquare, Mail } from 'lucide-react';
 
 const ProofCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [activeFilter, setActiveFilter] = useState<'resume' | 'interview' | 'email'>('resume');
 
-  const examples = [
-    {
-      title: 'Software Engineer Resume',
-      before: {
-        score: 34,
-        issues: ['Generic job descriptions', 'Missing keywords', 'Poor formatting']
+  const allExamples = {
+    resume: [
+      {
+        title: 'Software Engineer Resume',
+        before: {
+          score: 34,
+          issues: ['Generic job descriptions', 'Missing keywords', 'Poor formatting']
+        },
+        after: {
+          score: 87,
+          improvements: ['Quantified achievements', 'ATS-optimized keywords', 'Clean layout']
+        },
+        delta: '+53 points'
       },
-      after: {
-        score: 87,
-        improvements: ['Quantified achievements', 'ATS-optimized keywords', 'Clean layout']
+      {
+        title: 'Marketing Manager Resume',
+        before: {
+          score: 42,
+          issues: ['Vague responsibilities', 'No metrics', 'Outdated format']
+        },
+        after: {
+          score: 91,
+          improvements: ['ROI-focused bullets', 'Industry keywords', 'Modern design']
+        },
+        delta: '+49 points'
       },
-      delta: '+53 points'
-    },
-    {
-      title: 'Marketing Manager Resume',
-      before: {
-        score: 42,
-        issues: ['Vague responsibilities', 'No metrics', 'Outdated format']
+      {
+        title: 'Data Analyst Resume',
+        before: {
+          score: 28,
+          issues: ['Technical jargon heavy', 'No business impact', 'Dense blocks']
+        },
+        after: {
+          score: 84,
+          improvements: ['Business-focused language', 'Impact metrics', 'Scannable format']
+        },
+        delta: '+56 points'
+      }
+    ],
+    interview: [
+      {
+        title: 'Behavioral Question Response',
+        before: {
+          score: 'Unfocused',
+          issues: ['Rambling answers', 'No clear structure', 'Missing key details']
+        },
+        after: {
+          score: 'STAR Method',
+          improvements: ['Situation clearly set', 'Task defined', 'Action & Result specific']
+        },
+        delta: 'Confidence +'
       },
-      after: {
-        score: 91,
-        improvements: ['ROI-focused bullets', 'Industry keywords', 'Modern design']
+      {
+        title: 'Technical Interview Prep',
+        before: {
+          score: 'Scattered',
+          issues: ['Incomplete explanations', 'No examples', 'Weak conclusions']
+        },
+        after: {
+          score: 'Structured',
+          improvements: ['Step-by-step approach', 'Real examples', 'Clear reasoning']
+        },
+        delta: 'Clarity +'
+      }
+    ],
+    email: [
+      {
+        title: 'Cold Outreach Email',
+        before: {
+          score: 'Too long',
+          issues: ['Wordy introduction', 'Unclear ask', 'Generic content']
+        },
+        after: {
+          score: 'Concise',
+          improvements: ['Direct opening', 'Specific request', 'Personal touch']
+        },
+        delta: 'Replies +'
       },
-      delta: '+49 points'
-    },
-    {
-      title: 'Data Analyst Resume',
-      before: {
-        score: 28,
-        issues: ['Technical jargon heavy', 'No business impact', 'Dense blocks']
-      },
-      after: {
-        score: 84,
-        improvements: ['Business-focused language', 'Impact metrics', 'Scannable format']
-      },
-      delta: '+56 points'
-    }
-  ];
+      {
+        title: 'Follow-up Message',
+        before: {
+          score: 'Pushy',
+          issues: ['Too aggressive', 'No value add', 'Poor timing']
+        },
+        after: {
+          score: 'Professional',
+          improvements: ['Respectful tone', 'Added context', 'Clear next steps']
+        },
+        delta: 'Response +'
+      }
+    ]
+  };
+
+  const examples = allExamples[activeFilter];
+  const currentExample = examples[currentIndex];
 
   const nextSlide = () => {
     setCurrentIndex((prev) => (prev + 1) % examples.length);
@@ -53,17 +111,62 @@ const ProofCarousel = () => {
     setCurrentIndex((prev) => (prev - 1 + examples.length) % examples.length);
   };
 
-  const currentExample = examples[currentIndex];
+  const handleFilterChange = (filter: 'resume' | 'interview' | 'email') => {
+    setActiveFilter(filter);
+    setCurrentIndex(0);
+  };
+
+  const filters = [
+    { key: 'resume', label: 'Resume', icon: null },
+    { key: 'interview', label: 'Interview', icon: MessageSquare },
+    { key: 'email', label: 'Email', icon: Mail }
+  ];
+
+  const getScoreDisplay = (score: number | string, isAfter: boolean = false) => {
+    if (typeof score === 'number') {
+      return `${score}/100`;
+    }
+    return score;
+  };
+
+  const getScoreColor = (isAfter: boolean) => {
+    return isAfter 
+      ? 'text-green-600 dark:text-green-400'
+      : 'text-red-600 dark:text-red-400';
+  };
 
   return (
     <section className="max-w-6xl mx-auto px-4 py-16">
       <div className="text-center mb-12">
         <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-          Real results from real resumes
+          Real results from real searches
         </h2>
         <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-          See how JobGoblin transforms resumes with measurable ATS improvements
+          See how JobGoblin improves job search materials with measurable results
         </p>
+      </div>
+
+      {/* Filter Pills */}
+      <div className="flex justify-center mb-8">
+        <div className="flex bg-white dark:bg-gray-800 rounded-lg p-1 border border-gray-200 dark:border-gray-600">
+          {filters.map((filter) => {
+            const IconComponent = filter.icon;
+            return (
+              <button
+                key={filter.key}
+                onClick={() => handleFilterChange(filter.key as 'resume' | 'interview' | 'email')}
+                className={`flex items-center space-x-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                  activeFilter === filter.key
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                }`}
+              >
+                {IconComponent && <IconComponent className="h-4 w-4" />}
+                <span>{filter.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="relative">
@@ -85,8 +188,8 @@ const ProofCarousel = () => {
               <div className="space-y-4">
                 <div className="text-center">
                   <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Before</h4>
-                  <div className="text-3xl font-bold text-red-600 dark:text-red-400">
-                    {currentExample.before.score}/100
+                  <div className={`text-3xl font-bold ${getScoreColor(false)}`}>
+                    {getScoreDisplay(currentExample.before.score)}
                   </div>
                 </div>
                 
@@ -107,8 +210,8 @@ const ProofCarousel = () => {
               <div className="space-y-4">
                 <div className="text-center">
                   <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">After</h4>
-                  <div className="text-3xl font-bold text-green-600 dark:text-green-400">
-                    {currentExample.after.score}/100
+                  <div className={`text-3xl font-bold ${getScoreColor(true)}`}>
+                    {getScoreDisplay(currentExample.after.score, true)}
                   </div>
                 </div>
                 

@@ -1,2 +1,2 @@
 export const BRAND_NAME = 'JobGoblin';
-export const TAGLINE = 'Turn your resume into interviews in 48 hours.';
+export const TAGLINE = 'Three tools to boost your job search.';

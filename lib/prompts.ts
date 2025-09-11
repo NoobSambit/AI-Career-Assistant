@@ -189,7 +189,7 @@ You MUST respond with ONLY a JSON object in this exact format. REPLACE ALL EXAMP
     }
   },
   "roleOptimization": {
-    "targetRole": "Software Developer",
+    "targetRole": "General Software Role",
     "matchPercentage": 82,
     "keywordGaps": ["React/Angular", "Cloud Platforms", "API Development", "Testing Frameworks"],
     "recommendedSections": ["Projects", "Certifications", "Technical Skills"],

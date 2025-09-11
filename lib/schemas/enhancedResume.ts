@@ -38,7 +38,7 @@ export const enhancedResumeSchema = z.object({
       degree: z.string(),
       institution: z.string(),
       year: z.string(),
-      gpa: z.string().optional(),
+      gpa: z.string().nullable().optional(),
       achievements: z.array(z.string()).optional(),
     })),
     skills: z.object({
@@ -96,7 +96,7 @@ export const enhancedResumeSchema = z.object({
     competitiveAdvantage: z.array(z.string()),
     industryTrends: z.array(z.string()),
     salaryInsights: z.object({
-      range: z.string(),
+      range: z.string().nullable().optional(),
       factors: z.array(z.string()),
     }),
   }),
@@ -117,7 +117,7 @@ export const enhancedResumeSchema = z.object({
 
   // Role-specific optimizations
   roleOptimization: z.object({
-    targetRole: z.string(),
+    targetRole: z.string().nullable().optional(),
     matchPercentage: z.number().min(0).max(100),
     keywordGaps: z.array(z.string()),
     recommendedSections: z.array(z.string()),
@@ -128,8 +128,8 @@ export const enhancedResumeSchema = z.object({
   careerAnalysis: z.object({
     currentLevel: z.string(),
     progressionPath: z.object({
-      nextRole: z.string(),
-      timeframe: z.string(),
+      nextRole: z.string().nullable().optional(),
+      timeframe: z.string().nullable().optional(),
       requirements: z.array(z.string()),
     }),
     skillGaps: z.array(z.object({

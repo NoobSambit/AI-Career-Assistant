@@ -63,7 +63,11 @@ export function EnhancedOutput({ data }: EnhancedOutputProps): JSX.Element {
                   <div><span className="font-medium">Name:</span> {data.enhancedResume.personalInfo.name}</div>
                   <div><span className="font-medium">Email:</span> {data.enhancedResume.personalInfo.email}</div>
                   <div><span className="font-medium">Phone:</span> {data.enhancedResume.personalInfo.phone}</div>
-                  <div><span className="font-medium">Location:</span> {data.enhancedResume.personalInfo.location}</div>
+                  <div><span className="font-medium">Location:</span> {
+                    typeof data.enhancedResume.personalInfo.location === 'string' 
+                      ? data.enhancedResume.personalInfo.location 
+                      : JSON.stringify(data.enhancedResume.personalInfo.location)
+                  }</div>
                   {data.enhancedResume.personalInfo.linkedin && (
                     <div><span className="font-medium">LinkedIn:</span> {data.enhancedResume.personalInfo.linkedin}</div>
                   )}

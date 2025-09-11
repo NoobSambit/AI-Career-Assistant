@@ -1,0 +1,50 @@
+John Smith
+Email: johnsmith@email.com
+Phone: (555) 123-4567
+Location: New York, NY
+
+OBJECTIVE
+Looking for a software engineering position where I can use my skills and grow my career.
+
+EDUCATION
+Bachelor of Science in Computer Science
+State University, NY
+Graduated: May 2022
+GPA: 3.4
+
+EXPERIENCE
+
+Software Developer Intern
+Tech Solutions Inc. | Summer 2021
+- Worked on various projects
+- Helped with coding tasks
+- Attended team meetings
+- Fixed some bugs
+
+Junior Developer
+StartupXYZ | June 2022 - Present
+- Write code for web applications
+- Work with team members
+- Debug issues when they come up
+- Use JavaScript and Python
+- Help maintain existing systems
+
+SKILLS
+- Programming languages: JavaScript, Python, Java, C++
+- Technologies: React, Node.js, HTML, CSS
+- Database: MySQL
+- Tools: Git, VS Code
+- Good communication skills
+- Team player
+
+PROJECTS
+
+E-commerce Website
+Built a website for online shopping using React and Node.js. Users can browse products and make purchases.
+
+Weather App
+Created a mobile app that shows weather information. Used APIs to get weather data.
+
+ACHIEVEMENTS
+- Dean's List Fall 2021
+- Completed online courses on Coursera

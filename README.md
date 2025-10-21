@@ -176,4 +176,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Ready to boost your career?** 🚀 [Try the AI Career Assistant](https://ai-career-assistant.vercel.app)
+**Ready to boost your career?** 🚀 [Try the AI Career Assistant](https://ai-career-assistant-sigma.vercel.app/)

@@ -27,10 +27,12 @@ A comprehensive AI-powered career development platform that helps professionals 
 
 - **Frontend**: Next.js 14, React 18, TypeScript
 - **Styling**: Tailwind CSS, Shadcn/ui
-- **AI Integration**: Google Gemini API
+- **AI Integration**: Google Gemini API via LangChain
+- **LLM Orchestration**: LangChain (chains, prompts, parsers)
 - **Deployment**: Vercel
 - **File Processing**: Custom document parsers
 - **Security**: Rate limiting, input validation, sanitization
+- **Monitoring**: LangSmith (optional)
 
 ## 🚀 Getting Started
 
@@ -61,6 +63,11 @@ cp .env.example .env.local
 4. Add your Google Gemini API key to `.env.local`:
 ```env
 GEMINI_API_KEY=your_api_key_here
+
+# Optional - for LangSmith monitoring
+LANGCHAIN_TRACING_V2=false
+LANGCHAIN_API_KEY=your_langsmith_key_here
+LANGCHAIN_PROJECT=ai-career-assistant
 ```
 
 5. Run the development server:
@@ -89,11 +96,18 @@ AI-Career-Assistant/
 │   ├── resume/             # Resume enhancement page
 │   └── globals.css         # Global styles
 ├── lib/
-│   ├── schemas/            # TypeScript schemas
-│   ├── gemini.ts          # AI integration
-│   ├── documentParser.ts  # File processing
-│   └── validation.ts      # Input validation
-└── public/                 # Static assets
+│   ├── langchain/          # LangChain integration
+│   │   ├── client.ts       # Model configuration
+│   │   ├── prompts/        # Prompt templates
+│   │   ├── parsers/        # Output parsers
+│   │   ├── chains/         # Processing chains
+│   │   ├── tools/          # LangChain tools
+│   │   └── evaluation/     # Testing utilities
+│   ├── schemas/            # Zod schemas
+│   ├── gemini.ts           # Legacy AI integration
+│   ├── documentParser.ts   # File processing
+│   └── validation.ts       # Input validation
+└── public/                  # Static assets
 ```
 
 ## 🔧 API Endpoints
@@ -170,9 +184,45 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ✅ **Resume Agent**: Fully functional with comprehensive analysis
 ✅ **Email Agent**: Complete with psychology and deliverability analysis  
 ✅ **Interview Agent**: Ready with STAR method analysis
+✅ **LangChain Integration**: Production-grade LLM orchestration
 ✅ **UI/UX**: Professional dark theme implementation
-✅ **API Integration**: All endpoints working with Gemini AI
+✅ **API Integration**: All endpoints working with Gemini AI via LangChain
 ✅ **Deployment Ready**: Configured for Vercel deployment
+✅ **Monitoring**: LangSmith integration ready
+
+## 🚀 LangChain Integration
+
+This project now uses **LangChain** for robust LLM orchestration:
+
+### Key Features
+- **Structured Outputs**: Guaranteed JSON schema compliance
+- **Reusable Prompts**: Parameterized templates with versioning
+- **Composable Chains**: Modular processing pipelines
+- **Automatic Retry**: Built-in error handling and retries
+- **Type Safety**: Full Zod schema validation
+- **Monitoring**: LangSmith tracing support
+
+### Documentation
+- 📖 **Setup Guide**: See [LANGCHAIN_SETUP.md](LANGCHAIN_SETUP.md)
+- 🔄 **Migration Guide**: See [LANGCHAIN_MIGRATION.md](LANGCHAIN_MIGRATION.md)
+- 📊 **Integration Summary**: See [LANGCHAIN_INTEGRATION_SUMMARY.md](LANGCHAIN_INTEGRATION_SUMMARY.md)
+
+### Quick Start with LangChain
+```bash
+# Install dependencies
+npm install
+
+# Configure environment
+echo "GEMINI_API_KEY=your_key" >> .env.local
+
+# Run development server
+npm run dev
+
+# Test the APIs
+curl -X POST http://localhost:3000/api/resume \
+  -H "Content-Type: application/json" \
+  -d '{"user_input": "Your resume text..."}'
+```
 
 ---
 

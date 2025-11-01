@@ -1,6 +1,17 @@
 import { z } from 'zod';
 
-// STAR Analysis structure
+const AnswerSectionSchema = z.object({
+  section: z.string(),
+  content: z.string(),
+});
+
+const AnswerDetailsSchema = z.object({
+  title: z.string(),
+  content: z.string(),
+  keyPoints: z.array(z.string()),
+  structure: z.array(AnswerSectionSchema),
+});
+
 const StarComponentSchema = z.object({
   strength: z.number().min(0).max(10),
   feedback: z.string(),
@@ -14,51 +25,54 @@ const StarAnalysisSchema = z.object({
   result: StarComponentSchema,
 });
 
-// Enhanced interview response structure
-export const enhancedInterviewSchema = z.object({
-  // Overall assessment
-  assessment: z.object({
-    overallScore: z.number().min(0).max(10),
-    grade: z.enum(['Excellent', 'Good', 'Needs Improvement', 'Poor']),
-    summary: z.string(),
-    strengths: z.array(z.string()),
-    weaknesses: z.array(z.string()),
-  }),
+const AssessmentSchema = z.object({
+  overallScore: z.number().min(0).max(10),
+  grade: z.enum(['Excellent', 'Good', 'Needs Improvement', 'Poor']),
+  summary: z.string(),
+  strengths: z.array(z.string()),
+  weaknesses: z.array(z.string()),
+});
 
-  // STAR method analysis (for behavioral questions with answers)
-  starAnalysis: StarAnalysisSchema.optional(),
+const ImprovementSchema = z.object({
+  category: z.string(),
+  title: z.string(),
+  description: z.string(),
+  impact: z.enum(['High', 'Medium', 'Low']),
+  example: z.string().optional(),
+});
 
-  // Enhanced answer suggestion
-  enhancedAnswer: z.object({
-    title: z.string(),
-    content: z.string(),
-    keyPoints: z.array(z.string()),
-    structure: z.array(z.object({
-      section: z.string(),
-      content: z.string(),
-    })),
-  }),
+const ConfidenceTipSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  actionSteps: z.array(z.string()),
+});
 
-  // Specific improvements
-  improvements: z.array(z.object({
-    category: z.string(),
-    title: z.string(),
-    description: z.string(),
-    impact: z.enum(['High', 'Medium', 'Low']),
-    example: z.string().optional(),
-  })),
-
-  // Confidence building tips
-  confidenceTips: z.array(z.object({
-    title: z.string(),
-    description: z.string(),
-    actionSteps: z.array(z.string()),
-  })),
-
-  // Follow-up questions to prepare for
+const BaseResponseSchema = z.object({
+  answerSource: z.enum(['user', 'assistant']),
+  improvements: z.array(ImprovementSchema),
+  confidenceTips: z.array(ConfidenceTipSchema),
   followUpQuestions: z.array(z.string()),
 });
 
+const EnhancedAnswerSchema = BaseResponseSchema.extend({
+  answerSource: z.literal('user'),
+  assessment: AssessmentSchema,
+  starAnalysis: StarAnalysisSchema.optional(),
+  enhancedAnswer: AnswerDetailsSchema,
+});
+
+const DraftAnswerSchema = BaseResponseSchema.extend({
+  answerSource: z.literal('assistant'),
+  draftAnswer: AnswerDetailsSchema,
+  assessment: z.never().optional(),
+  starAnalysis: z.never().optional(),
+  enhancedAnswer: z.never().optional(),
+});
+
+export const enhancedInterviewSchema = z.union([EnhancedAnswerSchema, DraftAnswerSchema]);
+
 export type EnhancedInterview = z.infer<typeof enhancedInterviewSchema>;
+export type Assessment = z.infer<typeof AssessmentSchema>;
 export type StarAnalysis = z.infer<typeof StarAnalysisSchema>;
 export type StarComponent = z.infer<typeof StarComponentSchema>;
+export type AnswerDetails = z.infer<typeof AnswerDetailsSchema>;

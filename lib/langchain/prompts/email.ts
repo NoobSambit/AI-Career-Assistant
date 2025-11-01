@@ -19,28 +19,28 @@ export const emailEnhancementPrompt = PromptTemplate.fromTemplate(`You are an el
    - formal: Professional, structured, corporate
    - assertive: Confident, clear, action-oriented
 
-3. **MINIMAL BUT STRATEGIC IMPROVEMENTS**:
+3. **STRATEGIC IMPROVEMENTS**:
    - Improve subject line for better open rates
    - Add professional greeting/closing if missing
    - Enhance clarity and structure
    - Add persuasion elements (social proof, urgency) ONLY if appropriate
-   - Don't add elaborate stories or lengthy examples unless email is very brief
+   - Keep response concise (150-220 words unless original is longer)
 
 4. **HONEST ASSESSMENT**:
-   - Score based on actual email quality
-   - Brief emails get lower scores (50-70 range)
-   - Don't inflate scores
+   - Score overall quality of ORIGINAL email on 0-10 scale
+   - Grades must be one of: Excellent, Good, Needs Improvement, Poor
+   - Predicted response rate must be realistic 0-100 percentage
 
-RESPONSE FORMAT:
+RESPONSE FORMAT (MUST MATCH EXACTLY):
 
 {{
   "assessment": {{
-    "overallScore": [0-100 based on actual quality],
-    "grade": "Excellent/Good/Fair/Poor",
+    "overallScore": [0-10 based on original email quality],
+    "grade": "Excellent" | "Good" | "Needs Improvement" | "Poor",
     "summary": "Brief honest assessment of the original email",
     "strengths": ["Actual strengths"],
-    "weaknesses": ["Actual issues"],
-    "predictedResponseRate": [realistic percentage]
+    "weaknesses": ["Specific issues"],
+    "predictedResponseRate": [realistic percentage between 0 and 100]
   }},
   "enhancedEmail": {{
     "subject": "Improved subject line (keep brief, under 60 chars)",
@@ -56,18 +56,24 @@ RESPONSE FORMAT:
     "persuasionTechniques": [
       {{"technique": "Name", "application": "How used", "effectiveness": "High/Medium/Low"}}
     ],
-    "emotionalTone": {{"primary": "Main tone", "secondary": [], "sentiment": [0-1]}},
+    "emotionalTone": {{"primary": "Main tone", "secondary": [], "sentiment": [number between -1 and 1]}},
     "cognitiveLoad": "Low/Medium/High",
     "actionClarity": [0-10]
+  }},
+  "culturalAdaptation": {{
+    "communicationStyle": "Describe inferred style",
+    "formalityLevel": [1-10],
+    "culturalConsiderations": ["Specific notes"],
+    "timeZoneOptimization": "Best time to send (if determinable)"
   }},
   "deliverabilityAnalysis": {{
     "spamRisk": "Low/Medium/High",
     "spamTriggers": ["If any"],
-    "engagementFactors": [{{"factor": "Name", "impact": "Positive/Negative", "suggestion": "Tip"}}],
+    "engagementFactors": [{{"factor": "Name", "impact": "Positive/Neutral/Negative", "suggestion": "Tip"}}],
     "mobileOptimization": [0-10]
   }},
   "improvements": [
-    {{"category": "Type", "title": "What to improve", "description": "How", "impact": "High/Medium/Low", "effort": "Low/Medium/High", "example": "Specific tip"}}
+    {{"category": "Type", "title": "What to improve", "description": "How", "impact": "High/Medium/Low", "effort": "Low/Medium/High", "example": "Specific tip", "businessImpact": "Describe measurable benefit"}}
   ],
   "alternatives": [
     {{"version": "Version name", "subject": "Alt subject", "body": "Alt body", "rationale": "Why this version", "expectedOutcome": "Result"}}

@@ -3,7 +3,6 @@
 import React, { useState, useRef } from 'react';
 import { Mail, Settings, Loader, CheckCircle, AlertCircle, Upload, Image, X, Users, Clock } from 'lucide-react';
 import AgentLayout from '../components/AgentLayout';
-import ScoreCard from '../components/ScoreCard';
 import { EnhancedOutput } from '../components/email/enhanced-output';
 import { enhancedEmailSchema, type EnhancedEmail } from '../../lib/schemas/enhancedEmail';
 import { FileUploadZone } from '../components/shared/FileUploadZone';
@@ -11,7 +10,6 @@ import { FileUploadZone } from '../components/shared/FileUploadZone';
 const EmailAgent = () => {
   const [input, setInput] = useState('');
   const [tone, setTone] = useState('friendly');
-  const [response, setResponse] = useState('');
   const [enhancedData, setEnhancedData] = useState<EnhancedEmail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -36,13 +34,162 @@ const EmailAgent = () => {
 
     setLoading(true);
     setError('');
-    setResponse('');
     setEnhancedData(null);
     setToneAssessment(null);
 
+    const buildFallback = (): EnhancedEmail => ({
+      assessment: {
+        overallScore: 6,
+        grade: 'Good',
+        summary: 'Your email shows good structure but could benefit from enhanced persuasion techniques and clearer calls-to-action.',
+        strengths: ['Clear communication', 'Professional tone'],
+        weaknesses: ['Missing urgency elements', 'Could use more personalization'],
+        predictedResponseRate: 45,
+      },
+      enhancedEmail: {
+        subject: 'Enhanced: Professional Communication',
+        greeting: 'Hi there,',
+        body: input || 'Your enhanced email content will appear here with improved structure, persuasion techniques, and clear calls-to-action.',
+        closing: 'Best regards,',
+        signature: 'Your Name\nYour Title\nCompany Name',
+        keyChanges: [
+          'Improved subject line for better open rates',
+          'Added personalization elements',
+          'Strengthened call-to-action',
+          'Optimized for mobile readability',
+        ],
+        wordCount: 120,
+        readingTime: '30 seconds',
+      },
+      psychologyAnalysis: {
+        persuasionTechniques: [
+          {
+            technique: 'Clarity',
+            application: 'Clear and direct communication style',
+            effectiveness: 'Medium',
+          },
+        ],
+        emotionalTone: {
+          primary: 'Professional',
+          secondary: ['Helpful', 'Direct'],
+          sentiment: 0.6,
+        },
+        cognitiveLoad: 'Low',
+        actionClarity: 7,
+      },
+      culturalAdaptation: {
+        communicationStyle: 'Direct Western Business',
+        formalityLevel: 6,
+        culturalConsiderations: ['Professional courtesy', 'Time-conscious approach'],
+        timeZoneOptimization: 'Tuesday-Thursday, 10 AM - 2 PM',
+      },
+      deliverabilityAnalysis: {
+        spamRisk: 'Low',
+        spamTriggers: [],
+        engagementFactors: [
+          {
+            factor: 'Professional tone',
+            impact: 'Positive',
+            suggestion: 'Maintains credibility and trust',
+          },
+        ],
+        mobileOptimization: 8,
+      },
+      improvements: [
+        {
+          category: 'Engagement',
+          title: 'Add Personalization',
+          description: 'Include recipient-specific details to increase relevance and response rates',
+          impact: 'High',
+          effort: 'Low',
+          businessImpact: 'Increases response rate by 25%',
+          example: 'Reference recent achievements or mutual connections',
+        },
+      ],
+      alternatives: [
+        {
+          version: 'Version A: Direct Approach',
+          subject: 'Quick question about [specific topic]',
+          body: 'Direct, results-focused version...',
+          rationale: 'For busy executives who prefer brevity',
+          expectedOutcome: 'Higher response rate from C-level contacts',
+        },
+      ],
+      followUpStrategy: {
+        timeline: [
+          {
+            day: 3,
+            action: 'Gentle follow-up',
+            template: 'Following up on my previous email...',
+          },
+        ],
+        escalationPath: ['Email', 'LinkedIn message', 'Phone call'],
+        responseScenarios: [
+          {
+            scenario: 'No response',
+            nextSteps: ['Send value-first follow-up', 'Try different channel'],
+          },
+        ],
+      },
+      industryInsights: {
+        industry: emailContext.industry || 'General Business',
+        bestPractices: ['Keep under 150 words', 'Use clear subject lines', 'Include specific CTAs'],
+        commonMistakes: ['Generic greetings', 'Unclear purpose', 'No follow-up plan'],
+        benchmarks: {
+          averageResponseRate: 42,
+          optimalLength: '100-150 words',
+          bestSendTimes: ['Tuesday 10 AM', 'Thursday 2 PM'],
+        },
+      },
+    });
+
+    const ensureStructured = (candidate: any) => {
+      const parsed = enhancedEmailSchema.safeParse(candidate);
+      return parsed.success ? parsed.data : null;
+    };
+
+    const parseResult = (raw: string, obj: any): EnhancedEmail | null => {
+      const direct = ensureStructured(obj);
+      if (direct) {
+        return direct;
+      }
+
+      if (obj?.enhancedData) {
+        const nested = ensureStructured(obj.enhancedData);
+        if (nested) {
+          return nested;
+        }
+      }
+
+      if (raw) {
+        const stripped = raw.replace(/```json|```/g, '').trim();
+        const start = stripped.indexOf('{');
+        const end = stripped.lastIndexOf('}');
+
+        if (start >= 0 && end > start) {
+          try {
+            const sliced = JSON.parse(stripped.slice(start, end + 1));
+            const parsed = ensureStructured(sliced);
+            if (parsed) {
+              return parsed;
+            }
+          } catch {}
+        }
+
+        try {
+          const parsed = ensureStructured(JSON.parse(stripped));
+          if (parsed) {
+            return parsed;
+          }
+        } catch {}
+      }
+
+      return null;
+    };
+
+    let result: any = null;
+
     try {
-      let result;
-      
       if (analysisMode === 'file' && selectedFile) {
         const formData = new FormData();
         formData.append('file', selectedFile);
@@ -82,170 +229,23 @@ const EmailAgent = () => {
 
         result = await response.json();
       }
-      
-      // Parse the structured response
-      const coerceToEnhanced = (raw: string, obj: any): EnhancedEmail | null => {
-        // Case A: object validates as-is
-        const direct = enhancedEmailSchema.safeParse(obj);
-        if (direct.success) return direct.data;
 
-        // Case B: try parsing from enhancedData field
-        if (obj?.enhancedData) {
-          const nested = enhancedEmailSchema.safeParse(obj.enhancedData);
-          if (nested.success) return nested.data;
-        }
-
-        // Case C: extract from raw text and build minimal structure
-        if (raw && typeof raw === 'string') {
-          const stripped = raw.replace(/```json|```/g, '').trim();
-          const start = stripped.indexOf('{');
-          const end = stripped.lastIndexOf('}');
-          
-          if (start >= 0 && end > start) {
-            try {
-              const candidate = JSON.parse(stripped.slice(start, end + 1));
-              const parsed = enhancedEmailSchema.safeParse(candidate);
-              if (parsed.success) return parsed.data;
-            } catch {}
-          }
-        }
-
-        return null;
-      };
-
-      // Parse model output; tolerate ```json fences and extra prose
-      if (result.response) {
-        const raw: string = result.response as string;
-        const stripped = raw.replace(/```json|```/g, '').trim();
-        const start = stripped.indexOf('{');
-        const end = stripped.lastIndexOf('}');
-        let candidate: any = null;
-        if (start >= 0 && end > start) {
-          try { candidate = JSON.parse(stripped.slice(start, end + 1)); } catch {}
-        }
-        if (!candidate) {
-          try { candidate = JSON.parse(stripped); } catch {}
-        }
-
-        const coerced = coerceToEnhanced(raw, candidate || {});
-        if (coerced) {
-          setEnhancedData(coerced);
-        } else {
-          // As a last resort, produce a minimal structured output
-          const minimal: EnhancedEmail = {
-            assessment: {
-              overallScore: 6,
-              grade: 'Good',
-              summary: 'Your email shows good structure but could benefit from enhanced persuasion techniques and clearer calls-to-action.',
-              strengths: ['Clear communication', 'Professional tone'],
-              weaknesses: ['Missing urgency elements', 'Could use more personalization'],
-              predictedResponseRate: 45
-            },
-            enhancedEmail: {
-              subject: 'Enhanced: Professional Communication',
-              greeting: 'Hi there,',
-              body: input || 'Your enhanced email content will appear here with improved structure, persuasion techniques, and clear calls-to-action.',
-              closing: 'Best regards,',
-              signature: 'Your Name\nYour Title\nCompany Name',
-              keyChanges: [
-                'Improved subject line for better open rates',
-                'Added personalization elements',
-                'Strengthened call-to-action',
-                'Optimized for mobile readability'
-              ],
-              wordCount: 120,
-              readingTime: '30 seconds'
-            },
-            psychologyAnalysis: {
-              persuasionTechniques: [
-                {
-                  technique: 'Clarity',
-                  application: 'Clear and direct communication style',
-                  effectiveness: 'Medium' as const
-                }
-              ],
-              emotionalTone: {
-                primary: 'Professional',
-                secondary: ['Helpful', 'Direct'],
-                sentiment: 0.6
-              },
-              cognitiveLoad: 'Low' as const,
-              actionClarity: 7
-            },
-            culturalAdaptation: {
-              communicationStyle: 'Direct Western Business',
-              formalityLevel: 6,
-              culturalConsiderations: ['Professional courtesy', 'Time-conscious approach'],
-              timeZoneOptimization: 'Tuesday-Thursday, 10 AM - 2 PM'
-            },
-            deliverabilityAnalysis: {
-              spamRisk: 'Low' as const,
-              spamTriggers: [],
-              engagementFactors: [
-                {
-                  factor: 'Professional tone',
-                  impact: 'Positive' as const,
-                  suggestion: 'Maintains credibility and trust'
-                }
-              ],
-              mobileOptimization: 8
-            },
-            improvements: [
-              {
-                category: 'Engagement',
-                title: 'Add Personalization',
-                description: 'Include recipient-specific details to increase relevance and response rates',
-                impact: 'High' as const,
-                effort: 'Low' as const,
-                businessImpact: 'Increases response rate by 25%',
-                example: 'Reference recent achievements or mutual connections'
-              }
-            ],
-            alternatives: [
-              {
-                version: 'Version A: Direct Approach',
-                subject: 'Quick question about [specific topic]',
-                body: 'Direct, results-focused version...',
-                rationale: 'For busy executives who prefer brevity',
-                expectedOutcome: 'Higher response rate from C-level contacts'
-              }
-            ],
-            followUpStrategy: {
-              timeline: [
-                {
-                  day: 3,
-                  action: 'Gentle follow-up',
-                  template: 'Following up on my previous email...'
-                }
-              ],
-              escalationPath: ['Email', 'LinkedIn message', 'Phone call'],
-              responseScenarios: [
-                {
-                  scenario: 'No response',
-                  nextSteps: ['Send value-first follow-up', 'Try different channel']
-                }
-              ]
-            },
-            industryInsights: {
-              industry: emailContext.industry || 'General Business',
-              bestPractices: ['Keep under 150 words', 'Use clear subject lines', 'Include specific CTAs'],
-              commonMistakes: ['Generic greetings', 'Unclear purpose', 'No follow-up plan'],
-              benchmarks: {
-                averageResponseRate: 42,
-                optimalLength: '100-150 words',
-                bestSendTimes: ['Tuesday 10 AM', 'Thursday 2 PM']
-              }
-            }
-          };
-          setEnhancedData(minimal);
-        }
+      const normalized = parseResult('', result);
+      if (normalized) {
+        setEnhancedData(normalized);
+      } else if (result?.response && typeof result.response === 'string') {
+        const parsed = parseResult(result.response, {});
+        setEnhancedData(parsed || buildFallback());
+      } else {
+        setEnhancedData(buildFallback());
       }
-      
-      if (result.tone_assessment) {
+
+      if (result?.tone_assessment) {
         setToneAssessment(result.tone_assessment);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      setEnhancedData(buildFallback());
     } finally {
       setLoading(false);
     }
@@ -625,15 +625,7 @@ Or paste your complete email draft..."
             <EnhancedOutput data={enhancedData} />
           )}
 
-          {response && !enhancedData && !loading && (
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 text-gray-400">
-              <pre className="whitespace-pre-wrap text-gray-200 leading-relaxed font-sans">
-                {response}
-              </pre>
-            </div>
-          )}
-
-          {!loading && !enhancedData && !response && (
+          {!loading && !enhancedData && (
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center">
               <Mail className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-100 mb-2">Ready to enhance your email?</h3>

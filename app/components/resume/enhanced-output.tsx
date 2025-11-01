@@ -42,9 +42,151 @@ export function EnhancedOutput({ data }: EnhancedOutputProps): JSX.Element {
     await navigator.clipboard.writeText(content);
   };
 
-  const handleExport = (type: 'pdf' | 'md') => {
-    // TODO: Implement export functionality
-    console.log(`Export ${type} requested`);
+  const handleExport = async (type: 'pdf' | 'md') => {
+    if (type === 'pdf') {
+      try {
+        // Generate PDF by opening in new window for browser print
+        const response = await fetch('/api/resume/download-pdf', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to generate PDF');
+        }
+        
+        const html = await response.text();
+        
+        // Open in new window for browser print to PDF
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(html);
+          printWindow.document.close();
+          
+          // Wait for content to load, then trigger print
+          printWindow.onload = () => {
+            setTimeout(() => {
+              printWindow.print();
+            }, 250);
+          };
+        }
+      } catch (error) {
+        console.error('PDF export failed:', error);
+        alert('Failed to generate PDF. Please try again.');
+      }
+    } else if (type === 'md') {
+      // Generate Markdown export
+      const markdown = generateMarkdown(data);
+      const blob = new Blob([markdown], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${data.enhancedResume.personalInfo.name.replace(/[^a-zA-Z0-9]/g, '_')}_Resume.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
+  
+  const generateMarkdown = (data: EnhancedResume): string => {
+    const { enhancedResume } = data;
+    let md = `# ${enhancedResume.personalInfo.name}\n\n`;
+    
+    // Contact Info
+    md += `${enhancedResume.personalInfo.email} | ${enhancedResume.personalInfo.phone}`;
+    if (enhancedResume.personalInfo.location) md += ` | ${enhancedResume.personalInfo.location}`;
+    if (enhancedResume.personalInfo.linkedin) md += ` | ${enhancedResume.personalInfo.linkedin}`;
+    if (enhancedResume.personalInfo.portfolio) md += ` | ${enhancedResume.personalInfo.portfolio}`;
+    md += '\n\n';
+    
+    // Professional Summary
+    if (enhancedResume.professionalSummary) {
+      md += `## Professional Summary\n\n${enhancedResume.professionalSummary}\n\n`;
+    }
+    
+    // Experience
+    if (enhancedResume.experience && enhancedResume.experience.length > 0) {
+      md += `## Experience\n\n`;
+      enhancedResume.experience.forEach(exp => {
+        md += `### ${exp.role}\n`;
+        md += `**${exp.company}** | ${exp.period}`;
+        if (exp.location) md += ` | ${exp.location}`;
+        md += '\n\n';
+        
+        if (exp.bullets && exp.bullets.length > 0) {
+          exp.bullets.forEach(bullet => {
+            md += `- ${bullet}\n`;
+          });
+          md += '\n';
+        }
+        
+        if (exp.keyAchievements && exp.keyAchievements.length > 0) {
+          md += '\n**Key Achievements:**\n';
+          exp.keyAchievements.forEach(ach => {
+            md += `- ${ach}\n`;
+          });
+          md += '\n';
+        }
+      });
+    }
+    
+    // Education
+    if (enhancedResume.education && enhancedResume.education.length > 0) {
+      md += `## Education\n\n`;
+      enhancedResume.education.forEach(edu => {
+        md += `### ${edu.degree}\n`;
+        md += `**${edu.institution}** | ${edu.year}`;
+        if (edu.gpa) md += ` | GPA: ${edu.gpa}`;
+        md += '\n\n';
+        
+        if (edu.achievements && edu.achievements.length > 0) {
+          edu.achievements.forEach(ach => {
+            md += `- ${ach}\n`;
+          });
+          md += '\n';
+        }
+      });
+    }
+    
+    // Skills
+    if (enhancedResume.skills) {
+      md += `## Skills\n\n`;
+      if (enhancedResume.skills.technical && enhancedResume.skills.technical.length > 0) {
+        md += `**Technical:** ${enhancedResume.skills.technical.join(', ')}\n\n`;
+      }
+      if (enhancedResume.skills.tools && enhancedResume.skills.tools.length > 0) {
+        md += `**Tools:** ${enhancedResume.skills.tools.join(', ')}\n\n`;
+      }
+      if (enhancedResume.skills.soft && enhancedResume.skills.soft.length > 0) {
+        md += `**Soft Skills:** ${enhancedResume.skills.soft.join(', ')}\n\n`;
+      }
+    }
+    
+    // Projects
+    if (enhancedResume.projects && enhancedResume.projects.length > 0) {
+      md += `## Projects\n\n`;
+      enhancedResume.projects.forEach(project => {
+        md += `### ${project.name}\n`;
+        if (project.duration) md += `*${project.duration}*\n\n`;
+        md += `${project.description}\n\n`;
+        if (project.technologies && project.technologies.length > 0) {
+          md += `**Technologies:** ${project.technologies.join(', ')}\n\n`;
+        }
+        if (project.highlights && project.highlights.length > 0) {
+          project.highlights.forEach(highlight => {
+            md += `- ${highlight}\n`;
+          });
+          md += '\n';
+        }
+        if (project.link) md += `[View Project](${project.link})\n\n`;
+      });
+    }
+    
+    return md;
   };
 
   const renderTabContent = () => {
@@ -249,27 +391,43 @@ export function EnhancedOutput({ data }: EnhancedOutputProps): JSX.Element {
               </div>
             )}
 
-            {/* Key Changes Made */}
-            {data.improvements && data.improvements.length > 0 && (
+            {/* Key Transformations - Before/After Comparison */}
+            {data.improvements && data.improvements.length > 0 && data.improvements.some(imp => imp.examples) && (
               <div>
                 <h4 className="text-md font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center">
                   <Target className="h-4 w-4 mr-2" />
-                  Key Improvements Made
+                  Key Transformations Made to Your Resume
                 </h4>
-                <div className="grid gap-3">
-                  {data.improvements.slice(0, 3).map((improvement, index) => (
-                    <div key={index} className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                      <div className="flex items-start space-x-3">
-                        <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-xs font-bold flex-shrink-0 mt-0.5">
-                          {index + 1}
-                        </span>
-                        <div>
-                          <p className="text-blue-800 dark:text-blue-200 font-medium">{improvement.title}</p>
-                          <p className="text-blue-700 dark:text-blue-300 text-sm mt-1">{improvement.description}</p>
+                <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border border-blue-200 dark:border-blue-800 rounded-xl p-5">
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+                    ✨ We transformed generic statements into quantified achievements. Here's what changed:
+                  </p>
+                  <div className="space-y-4">
+                    {data.improvements.filter(imp => imp.examples).slice(0, 3).map((improvement, index) => (
+                      <div key={index} className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm">
+                        <div className="mb-3">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 mb-2">
+                            {improvement.title}
+                          </span>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="border-l-4 border-red-400 dark:border-red-600 pl-3">
+                            <div className="text-xs font-medium text-red-600 dark:text-red-400 mb-1 uppercase tracking-wide">❌ Original (Generic)</div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 italic line-through decoration-red-500/50">{improvement.examples?.before}</p>
+                          </div>
+                          <div className="border-l-4 border-green-500 dark:border-green-600 pl-3">
+                            <div className="text-xs font-medium text-green-600 dark:text-green-400 mb-1 uppercase tracking-wide">✅ Enhanced (Quantified)</div>
+                            <p className="text-sm text-gray-900 dark:text-gray-100 font-medium">{improvement.examples?.after}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
+                      💡 <strong>All sections of your resume</strong> have been enhanced with similar improvements. Download the PDF to see the full enhanced version.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}

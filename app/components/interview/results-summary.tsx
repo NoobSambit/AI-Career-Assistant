@@ -1,16 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { Copy, Download, CheckCircle, TrendingUp } from 'lucide-react';
-import { EnhancedInterview } from '../../../lib/schemas/enhancedInterview';
+import { Copy, Download, CheckCircle, TrendingUp, MessageSquare } from 'lucide-react';
+import { Assessment } from '../../../lib/schemas/enhancedInterview';
 
 interface ResultsSummaryProps {
-  assessment: EnhancedInterview['assessment'];
+  assessment?: Assessment;
+  answerSource: 'user' | 'assistant';
   onCopy: () => Promise<void>;
   onExport: (type: 'pdf' | 'md') => void;
 }
 
-export function ResultsSummary({ assessment, onCopy, onExport }: ResultsSummaryProps): JSX.Element {
+export function ResultsSummary({ assessment, answerSource, onCopy, onExport }: ResultsSummaryProps): JSX.Element {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -35,6 +36,43 @@ export function ResultsSummary({ assessment, onCopy, onExport }: ResultsSummaryP
     if (score >= 4) return 'bg-yellow-500';
     return 'bg-red-500';
   };
+
+  if (answerSource === 'assistant' || !assessment) {
+    return (
+      <div className="bg-gradient-to-r from-emerald-950/50 to-green-950/50 px-6 py-6 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="flex items-start space-x-4">
+            <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+              <MessageSquare className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-100">Draft Response Generated</h3>
+              <p className="text-gray-300 mt-2 max-w-2xl leading-relaxed">
+                We crafted a complete STAR-aligned draft for your question. Personalize it with your real metrics and experiences to unlock scoring and STAR analysis on your next run.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleCopy}
+            className="flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            {copied ? (
+              <>
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Copy className="h-4 w-4 mr-2" />
+                Copy Draft
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gradient-to-r from-emerald-950/50 to-green-950/50 px-6 py-6 border-b border-gray-200 dark:border-gray-800">

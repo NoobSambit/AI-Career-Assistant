@@ -3,14 +3,14 @@
 import React, { useState, useRef } from 'react';
 import { MessageSquare, HelpCircle, Loader, CheckCircle, AlertCircle, Upload, Image, X, Target } from 'lucide-react';
 import AgentLayout from '../components/AgentLayout';
-import ScoreCard from '../components/ScoreCard';
 import { EnhancedOutput } from '../components/interview/enhanced-output';
 import { enhancedInterviewSchema, type EnhancedInterview } from '../../lib/schemas/enhancedInterview';
 import { FileUploadZone } from '../components/shared/FileUploadZone';
 
 const InterviewAgent = () => {
-  const [input, setInput] = useState('');
-  const [response, setResponse] = useState('');
+  const [questionInput, setQuestionInput] = useState('');
+  const [answerInput, setAnswerInput] = useState('');
+  const [fileContextInput, setFileContextInput] = useState('');
   const [enhancedData, setEnhancedData] = useState<EnhancedInterview | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,196 +24,259 @@ const InterviewAgent = () => {
     company_size: '',
     industry: ''
   });
-  const [starAnalysis, setStarAnalysis] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (analysisMode === 'text' && !input.trim()) return;
-    if (analysisMode === 'file' && !selectedFile) return;
+
+    const questionText = questionInput.trim();
+    const answerText = answerInput.trim();
+    const contextText = fileContextInput.trim();
+    const expectedSource: 'user' | 'assistant' = answerText ? 'user' : 'assistant';
+
+    if (analysisMode === 'text' && !questionText) {
+      setError('Please enter an interview question.');
+      return;
+    }
+
+    if (analysisMode === 'file' && !selectedFile) {
+      return;
+    }
 
     setLoading(true);
     setError('');
-    setResponse('');
     setEnhancedData(null);
-    setStarAnalysis(null);
 
-    try {
-      let result;
-      
-      if (analysisMode === 'file' && selectedFile) {
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-        formData.append('prompt', input.trim() || 'Please analyze this document and provide interview coaching advice.');
-        formData.append('role_context', roleContext);
-        formData.append('context', JSON.stringify(context));
-
-        const response = await fetch('/api/interview', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        result = await response.json();
-      } else {
-        const response = await fetch('/api/interview', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+    const buildFallback = (): EnhancedInterview => {
+      if (expectedSource === 'user') {
+        return {
+          answerSource: 'user',
+          assessment: {
+            overallScore: 5,
+            grade: 'Needs Improvement',
+            summary: 'Provide more depth and structure so we can deliver a full STAR assessment.',
+            strengths: ['Question identified', 'Initial attempt captured'],
+            weaknesses: ['Needs clearer STAR structure', 'Missing measurable impact'],
           },
-          body: JSON.stringify({
-            user_input: input,
-            question_type: questionType,
-            role_context: roleContext,
-            context: context
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        result = await response.json();
+          starAnalysis: {
+            situation: {
+              strength: 5,
+              feedback: 'Describe the scenario with timeline, stakeholders, and why it mattered.',
+              examples: ['Mention team size and project scope', 'Call out customer or business impact'],
+            },
+            task: {
+              strength: 5,
+              feedback: 'Clarify your personal objective and what success looked like.',
+              examples: ['State your responsibility', 'Explain success criteria from your manager'],
+            },
+            action: {
+              strength: 5,
+              feedback: 'List 2-3 key actions with tools, collaboration, and decisions.',
+              examples: ['Highlight a leadership move', 'Reference any tooling or frameworks used'],
+            },
+            result: {
+              strength: 4,
+              feedback: 'Quantify the outcome and share recognition or lessons learned.',
+              examples: ['Add metrics like % improvement or time saved', 'Mention feedback from stakeholders'],
+            },
+          },
+          enhancedAnswer: {
+            title: 'Enhanced Response Draft',
+            content: answerText || 'Share your answer so we can enhance it with the STAR method.',
+            keyPoints: [
+              'Clarify the Situation with timeframe, team size, and stakes',
+              'State your specific Task and success criteria',
+              'Detail 2-3 Actions with tools, collaboration, and decisions',
+              'Quantify the Result and include lessons learned',
+            ],
+            structure: [
+              { section: 'Situation', content: 'Set the context clearly with stakeholders and timeline.' },
+              { section: 'Task', content: 'Explain the objective you owned and what success meant.' },
+              { section: 'Action', content: 'Describe key steps you took, highlighting leadership and tools.' },
+              { section: 'Result', content: 'Share measurable impact and what you learned.' },
+            ],
+          },
+          improvements: [
+            {
+              category: 'Structure',
+              title: 'Reinforce STAR flow',
+              description: 'Organize your answer explicitly into Situation, Task, Action, Result to make evaluation easier.',
+              impact: 'High',
+            },
+          ],
+          confidenceTips: [
+            {
+              title: 'Rehearse with structure cues',
+              description: 'Practice each STAR section aloud to ensure timing and clarity.',
+              actionSteps: [
+                'Record a run-through and check that each STAR element is clear',
+                'Add concrete metrics before your next rehearsal',
+                'Time yourself to stay within 2 minutes',
+              ],
+            },
+          ],
+          followUpQuestions: [
+            'Which metrics best demonstrate the impact of your actions?',
+            'How did stakeholders respond to your approach?',
+            'What would you adjust if you faced this scenario again?',
+          ],
+        };
       }
-      
-      // Parse the structured response
-      const coerceToEnhanced = (raw: string, obj: any): EnhancedInterview | null => {
-        // Case A: object validates as-is
-        const direct = enhancedInterviewSchema.safeParse(obj);
-        if (direct.success) return direct.data;
 
-        // Case B: try parsing from enhancedData field
-        if (obj?.enhancedData) {
-          const nested = enhancedInterviewSchema.safeParse(obj.enhancedData);
-          if (nested.success) return nested.data;
-        }
+      return {
+        answerSource: 'assistant',
+        draftAnswer: {
+          title: 'Suggested STAR Draft',
+          content: `Question: ${questionText || 'Interview question not provided'}
 
-        // Case C: extract from raw text and build minimal structure
-        if (raw && typeof raw === 'string') {
-          const stripped = raw.replace(/```json|```/g, '').trim();
-          const start = stripped.indexOf('{');
-          const end = stripped.lastIndexOf('}');
-          
-          if (start >= 0 && end > start) {
-            try {
-              const candidate = JSON.parse(stripped.slice(start, end + 1));
-              const parsed = enhancedInterviewSchema.safeParse(candidate);
-              if (parsed.success) return parsed.data;
-            } catch {}
-          }
-        }
-
-        return null;
+Situation: Describe the most relevant context (team, challenge, timeframe).
+Task: Clarify your objective and how success would be measured.
+Action: Outline 2-3 decisive steps you would take, emphasizing collaboration and tools.
+Result: Share the intended outcome, metrics, and lessons learned.`,
+          keyPoints: [
+            'Ground the draft in one authentic example from your experience.',
+            'Quantify expected impact wherever possible.',
+            'Call out leadership, collaboration, or innovation moments.',
+          ],
+          structure: [
+            { section: 'Situation', content: 'Set the stage with timeline, stakeholders, and challenge.' },
+            { section: 'Task', content: 'Explain what you were accountable for and define success.' },
+            { section: 'Action', content: 'Highlight specific actions, tools, and decision-making.' },
+            { section: 'Result', content: 'Share measurable outcomes and what you learned.' },
+          ],
+        },
+        improvements: [
+          {
+            category: 'Personalization',
+            title: 'Layer in your metrics',
+            description: 'Add real numbers and stakeholder reactions to make the draft authentically yours.',
+            impact: 'High',
+          },
+        ],
+        confidenceTips: [
+          {
+            title: 'Practice the generated draft',
+            description: 'Use the suggested answer as a rehearsal script and refine wording to match your voice.',
+            actionSteps: [
+              'Insert your real metrics and achievements into each section',
+              'Rehearse until delivery feels natural and concise',
+              'Prepare follow-up details for deeper probing',
+            ],
+          },
+        ],
+        followUpQuestions: [
+          'What metrics will you add to personalize this draft?',
+          'Which stakeholders were involved and how will you describe them?',
+          'How will you adapt if the interviewer asks for an alternative outcome?',
+        ],
       };
+    };
 
-      // Parse model output; tolerate ```json fences and extra prose; avoid showing raw JSON
-      if (result.response) {
-        const raw: string = result.response as string;
+    const ensureSource = (candidate: any, fallback: 'user' | 'assistant') => {
+      if (candidate && typeof candidate === 'object' && !('answerSource' in candidate)) {
+        return { ...candidate, answerSource: fallback };
+      }
+      return candidate;
+    };
+
+    const parseResult = (raw: string, obj: any, fallback: 'user' | 'assistant'): EnhancedInterview | null => {
+      const prepared = ensureSource(obj, fallback);
+      const direct = enhancedInterviewSchema.safeParse(prepared);
+      if (direct.success) {
+        return direct.data;
+      }
+
+      if (prepared?.enhancedData) {
+        const nested = ensureSource(prepared.enhancedData, fallback);
+        const nestedParse = enhancedInterviewSchema.safeParse(nested);
+        if (nestedParse.success) {
+          return nestedParse.data;
+        }
+      }
+
+      if (raw) {
         const stripped = raw.replace(/```json|```/g, '').trim();
         const start = stripped.indexOf('{');
         const end = stripped.lastIndexOf('}');
-        let candidate: any = null;
         if (start >= 0 && end > start) {
-          try { candidate = JSON.parse(stripped.slice(start, end + 1)); } catch {}
-        }
-        if (!candidate) {
-          try { candidate = JSON.parse(stripped); } catch {}
+          try {
+            const parsed = JSON.parse(stripped.slice(start, end + 1));
+            const candidate = enhancedInterviewSchema.safeParse(ensureSource(parsed, fallback));
+            if (candidate.success) {
+              return candidate.data;
+            }
+          } catch {}
         }
 
-        const coerced = coerceToEnhanced(raw, candidate || {});
-        if (coerced) {
-          setEnhancedData(coerced);
-        } else {
-          // As a last resort, produce a minimal structured output from user's input
-          // Check if this looks like a question + answer format
-          const hasAnswer = input.toLowerCase().includes('answer:') || 
-                           input.toLowerCase().includes('my response:') ||
-                           input.split('\n').length > 3;
-          
-          const minimal: EnhancedInterview = {
-            assessment: {
-              overallScore: 6,
-              grade: 'Good',
-              summary: 'Your response shows good structure but could benefit from more specific details and quantified results.',
-              strengths: ['Clear communication', 'Logical approach'],
-              weaknesses: ['Missing specific metrics', 'Could use more detailed examples']
-            },
-            starAnalysis: hasAnswer ? {
-              situation: {
-                strength: 7,
-                feedback: 'Good context provided, but could include more specific details about the impact',
-                examples: ['Add specific metrics about delays', 'Mention team size or project scope']
-              },
-              task: {
-                strength: 6,
-                feedback: 'Task is implied but could be more explicitly stated',
-                examples: ['Clearly state your specific responsibility', 'Define what success looks like']
-              },
-              action: {
-                strength: 8,
-                feedback: 'Multiple concrete actions taken, showing good problem-solving approach',
-                examples: ['Great use of one-on-one conversation', 'Smart pairing strategy']
-              },
-              result: {
-                strength: 7,
-                feedback: 'Positive outcomes described but could use more quantification',
-                examples: ['Add specific timeline improvements', 'Quantify productivity gains']
-              }
-            } : undefined,
-            enhancedAnswer: {
-              title: 'Enhanced Response Structure',
-              content: input || 'Please provide your question and answer for detailed coaching.',
-              keyPoints: [
-                'Use the STAR method for behavioral questions',
-                'Include specific metrics and numbers',
-                'Show clear cause and effect relationships'
-              ],
-              structure: [
-                { section: 'Situation', content: 'Set clear context with specific details' },
-                { section: 'Task', content: 'Define your specific role and responsibilities' },
-                { section: 'Action', content: 'Describe concrete steps you took' },
-                { section: 'Result', content: 'Quantify the positive outcomes' }
-              ]
-            },
-            improvements: [
-              {
-                category: 'Quantification',
-                title: 'Add Specific Metrics',
-                description: 'Include numbers, percentages, timeframes to make your impact tangible',
-                impact: 'High' as const,
-                example: 'Instead of "improved performance", say "reduced response time by 40%"'
-              }
-            ],
-            confidenceTips: [
-              {
-                title: 'Practice Your Response',
-                description: 'Rehearse your answer out loud to build confidence',
-                actionSteps: [
-                  'Record yourself telling the story',
-                  'Time your response (aim for 90-120 seconds)',
-                  'Practice key metrics until they flow naturally'
-                ]
-              }
-            ],
-            followUpQuestions: [
-              'Can you tell me more about the specific challenges you faced?',
-              'How did you measure the success of your actions?',
-              'What would you do differently if you faced a similar situation again?'
-            ]
-          };
-          setEnhancedData(minimal);
+        try {
+          const parsed = JSON.parse(stripped);
+          const candidate = enhancedInterviewSchema.safeParse(ensureSource(parsed, fallback));
+          if (candidate.success) {
+            return candidate.data;
+          }
+        } catch {}
+      }
+
+      return null;
+    };
+
+    let result: any = null;
+
+    try {
+      if (analysisMode === 'file' && selectedFile) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('prompt', contextText || 'Please analyze this document and provide interview coaching advice.');
+        formData.append('role_context', roleContext);
+        formData.append('context', JSON.stringify({ ...context, question: questionText || undefined, answer: answerText || undefined }));
+
+        const response = await fetch('/api/interview', { method: 'POST', body: formData });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        result = await response.json();
+      } else {
+        const payload: Record<string, unknown> = {
+          question: questionText,
+          question_type: questionType,
+          role_context: roleContext || undefined,
+          context,
+        };
+        if (answerText) {
+          payload.answer = answerText;
+        }
+
+        const response = await fetch('/api/interview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        result = await response.json();
+      }
+
+      const direct = parseResult('', result, expectedSource);
+      if (direct) {
+        setEnhancedData(direct);
+        return;
+      }
+
+      if (result?.response && typeof result.response === 'string') {
+        const parsed = parseResult(result.response, {}, expectedSource);
+        if (parsed) {
+          setEnhancedData(parsed);
+          return;
         }
       }
-      
-      if (result.star_analysis) {
-        setStarAnalysis(result.star_analysis);
-      }
+
+      setEnhancedData(buildFallback());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      setEnhancedData(buildFallback());
     } finally {
       setLoading(false);
     }
@@ -394,29 +457,37 @@ const InterviewAgent = () => {
 
         {/* Text Input Section */}
         {analysisMode === 'text' && (
-          <div>
-            <label className="block text-sm font-semibold text-gray-200 mb-3">
-              <HelpCircle className="inline h-4 w-4 mr-2" />
-              Enter your interview question or scenario:
-            </label>
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Examples:
-- Tell me about a time when you had to work with a difficult team member
-- Why should we hire you over other candidates?
-- Describe your experience with project management
-- How do you handle stress and pressure?
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-semibold text-gray-200 mb-3">
+                <HelpCircle className="inline h-4 w-4 mr-2" />
+                Interview question
+              </label>
+              <textarea
+                value={questionInput}
+                onChange={(e) => setQuestionInput(e.target.value)}
+                placeholder={`Example questions:\n- Tell me about a time when you had to work with a difficult team member\n- Why should we hire you over other candidates?\n- How do you handle stress and pressure?`}
+                rows={4}
+                className="w-full px-4 py-3 border border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none transition-all duration-200 text-gray-100 placeholder-gray-500 bg-gray-950"
+                disabled={loading}
+              />
+            </div>
 
-Or include both question and your answer:
-Question: Tell me about a challenging project you led.
-Answer: In my previous role, I led a team of 8 developers..."
-              rows={8}
-              className="w-full px-4 py-3 border border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none transition-all duration-200 text-gray-100 placeholder-gray-500 bg-gray-950"
-              disabled={loading}
-            />
-            <div className="mt-2 text-sm text-gray-400">
-              💡 Tip: Include both the question and your answer for detailed STAR method analysis
+            <div>
+              <label className="block text-sm font-semibold text-gray-200 mb-3">
+                Your answer (optional)
+              </label>
+              <textarea
+                value={answerInput}
+                onChange={(e) => setAnswerInput(e.target.value)}
+                placeholder={`Share your draft answer here for enhancement.\n\nExample:\nI led a cross-functional squad of 8 engineers to rebuild our payments stack...`}
+                rows={6}
+                className="w-full px-4 py-3 border border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none transition-all duration-200 text-gray-100 placeholder-gray-500 bg-gray-950"
+                disabled={loading}
+              />
+              <div className="mt-2 text-sm text-gray-400">
+                💡 Include both question and answer to unlock scoring, STAR analysis, and targeted improvements.
+              </div>
             </div>
           </div>
         )}
@@ -430,7 +501,7 @@ Answer: In my previous role, I led a team of 8 developers..."
                 <button
                   key={index}
                   type="button"
-                  onClick={() => setInput(question)}
+                  onClick={() => setQuestionInput(question)}
                   className="text-left p-3 text-sm bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-emerald-600 rounded-lg transition-all duration-300 text-gray-200 hover:text-emerald-300"
                   disabled={loading}
                 >
@@ -448,8 +519,8 @@ Answer: In my previous role, I led a team of 8 developers..."
               Additional Context (Optional):
             </label>
             <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
+              value={fileContextInput}
+              onChange={(e) => setFileContextInput(e.target.value)}
               placeholder="Provide additional context about the document:
 - What specific aspects of the job description concern you most?
 - What interview questions are you struggling with?
@@ -465,7 +536,11 @@ Answer: In my previous role, I led a team of 8 developers..."
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={loading || (analysisMode === 'text' && !input.trim()) || (analysisMode === 'file' && !selectedFile)}
+          disabled={
+            loading ||
+            (analysisMode === 'text' && !questionInput.trim()) ||
+            (analysisMode === 'file' && !selectedFile)
+          }
           className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] disabled:scale-100 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
         >
           {loading ? (
@@ -517,15 +592,7 @@ Answer: In my previous role, I led a team of 8 developers..."
             <EnhancedOutput data={enhancedData} />
           )}
 
-          {response && !enhancedData && !loading && (
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 text-gray-400">
-              <pre className="whitespace-pre-wrap text-gray-200 leading-relaxed font-sans">
-                {response}
-              </pre>
-            </div>
-          )}
-
-          {!loading && !enhancedData && !response && (
+          {!loading && !enhancedData && (
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center">
               <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-100 mb-2">Ready to practice your interview?</h3>

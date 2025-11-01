@@ -30,33 +30,37 @@ export const createInterviewPreparationChain = () => {
       console.log('[InterviewChain] Starting preparation for question');
       
       let starEvaluation = null;
-      if (input.answer) {
-        starEvaluation = evaluateSTARStructure(input.answer);
+      const trimmedAnswer = input.answer?.trim();
+      if (trimmedAnswer) {
+        starEvaluation = evaluateSTARStructure(trimmedAnswer);
         console.log('[InterviewChain] STAR evaluation completed:', starEvaluation.overallScore);
       }
       
       return {
         ...input,
+        answerProvided: Boolean(trimmedAnswer),
         starEvaluation,
       };
     },
     
     // Step 2: Format prompt
-    async (data: InterviewChainInput & { starEvaluation: any }) => {
+    async (data: InterviewChainInput & { starEvaluation: any; answerProvided: boolean }) => {
       const formattedPrompt = await interviewPreparationPrompt.format({
         question: data.question,
         answer: data.answer || 'Not provided',
         questionType: data.questionType || 'behavioral',
+        answerProvided: data.answerProvided ? 'true' : 'false',
       });
       
       return {
         prompt: formattedPrompt,
         starEvaluation: data.starEvaluation,
+        answerProvided: data.answerProvided,
       };
     },
     
     // Step 3: Invoke model
-    async (data: { prompt: string; starEvaluation: any }) => {
+    async (data: { prompt: string; starEvaluation: any; answerProvided: boolean }) => {
       console.log('[InterviewChain] Invoking model...');
       const model = getStructuredOutputModel();
       
@@ -69,11 +73,12 @@ export const createInterviewPreparationChain = () => {
       return {
         rawResponse: response.content.toString(),
         starEvaluation: data.starEvaluation,
+        answerProvided: data.answerProvided,
       };
     },
     
     // Step 4: Parse and validate
-    async (data: { rawResponse: string; starEvaluation: any }) => {
+    async (data: { rawResponse: string; starEvaluation: any; answerProvided: boolean }) => {
       console.log('[InterviewChain] Parsing response...');
       
       try {
@@ -81,8 +86,15 @@ export const createInterviewPreparationChain = () => {
         console.log('[InterviewChain] Response parsed successfully');
         
         // Enrich with STAR evaluation if available
-        if (data.starEvaluation && !parsed.starAnalysis) {
+        if (data.starEvaluation && parsed.answerSource === 'user' && !parsed.starAnalysis) {
           parsed.starAnalysis = data.starEvaluation.analysis;
+        }
+        
+        if (data.answerProvided && parsed.answerSource !== 'user') {
+          parsed.answerSource = 'user';
+        }
+        if (!data.answerProvided && parsed.answerSource !== 'assistant') {
+          parsed.answerSource = 'assistant';
         }
         
         return parsed;

@@ -34,20 +34,18 @@ export interface LangChainConfig {
   maxOutputTokens?: number;
   topP?: number;
   topK?: number;
-  timeout?: number;
   maxRetries?: number;
 }
 
 /**
  * Default configuration for LangChain models
  */
-const DEFAULT_CONFIG: Required<LangChainConfig> = {
+const DEFAULT_CONFIG: Required<Omit<LangChainConfig, 'maxRetries'>> & { maxRetries: number } = {
   modelName: 'gemini-2.0-flash',
   temperature: 0.7,
   maxOutputTokens: 8192,
   topP: 0.95,
   topK: 40,
-  timeout: 30000, // 30 seconds
   maxRetries: 2,
 };
 
@@ -89,7 +87,6 @@ export function getLangChainModel(config: LangChainConfig = {}): BaseChatModel {
     maxOutputTokens: finalConfig.maxOutputTokens,
     topP: finalConfig.topP,
     topK: finalConfig.topK,
-    timeout: finalConfig.timeout,
     maxRetries: finalConfig.maxRetries,
   });
 

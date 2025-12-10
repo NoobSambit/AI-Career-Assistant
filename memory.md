@@ -850,3 +850,40 @@ Invalid response structure from AI: [ 'ats', 'summary', 'experience', 'skills', 
 - AI should now use actual resume data (Sambit Pradhan, real projects, real education)
 - No more generic placeholder responses
 - Proper analysis of real resume content and achievements
+
+## Rate Limiting Fix (2024-12-10)
+
+### Issue Identified
+- All 3 agents (Resume, Interview, Email) were returning 429 "Too Many Requests" errors
+- Errors occurred regardless of input size
+- Users were blocked after only a few API calls
+
+### Root Cause
+- Rate limiting was set to **10 requests per 60 seconds** (10 requests/minute)
+- This limit was shared across all agents
+- Testing multiple agents quickly exceeded the 10-request limit
+- Token bucket refill logic only refilled after full 60-second interval
+
+### Solution Implemented
+- Increased rate limit from **10 to 100 requests per 60 seconds**
+- This provides 10x more capacity for testing and normal usage
+- Rate limiting configuration in `lib/rateLimit.ts`
+- Change applies to all API routes: `/api/resume`, `/api/email`, `/api/interview`
+
+### Technical Details
+```typescript
+// Before: limit = 10
+export function checkRateLimit(ip: string, route: string, limit = 10, intervalMs = 60_000)
+
+// After: limit = 100  
+export function checkRateLimit(ip: string, route: string, limit = 100, intervalMs = 60_000)
+```
+
+### Files Modified
+- `lib/rateLimit.ts`: Increased default rate limit from 10 to 100 requests/minute
+
+### Expected Outcome
+- No more 429 errors during normal usage
+- Users can test all 3 agents multiple times without hitting limits
+- More reasonable rate limiting for local development and testing
+- May need to wait ~1 minute for current rate limit window to reset, or restart dev server to clear cache

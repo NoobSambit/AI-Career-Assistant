@@ -9,7 +9,7 @@ export function rateLimitKey(ip: string, route: string) {
   return `${route}:${ip}`;
 }
 
-export function checkRateLimit(ip: string, route: string, limit = 10, intervalMs = 60_000) {
+export function checkRateLimit(ip: string, route: string, limit = 100, intervalMs = 60_000) {
   const key = rateLimitKey(ip, route);
   const now = Date.now();
   let bucket = buckets.get(key);

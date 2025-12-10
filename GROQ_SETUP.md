@@ -9,7 +9,7 @@ Your AI Career Assistant now uses **Groq** instead of Gemini for 3x better rate 
 - ✅ **14,400 RPD** (vs Gemini's 1,500 RPD) - 9.6x more daily requests  
 - ✅ **Super Fast** - Groq's LPU architecture is significantly faster
 - ✅ **No More 429 Errors** - Much more generous free tier
-- ✅ **Great Quality** - Llama 3.1 70B Versatile model
+- ✅ **Great Quality** - Llama 3.3 70B Versatile model (latest!)
 
 ---
 
@@ -53,7 +53,7 @@ npm run dev
 | **Requests/Min** | 10-15 | 30 | **3x better** |
 | **Requests/Day** | 1,500 | 14,400 | **9.6x better** |
 | **Speed** | Standard | Very Fast | **Much faster** |
-| **Model** | Gemini 1.5/2.0 | Llama 3.1 70B | Comparable |
+| **Model** | Gemini 1.5/2.0 | Llama 3.3 70B | Better |
 
 ---
 
@@ -62,7 +62,7 @@ npm run dev
 ### What Changed:
 - ✅ Installed `@langchain/groq` package
 - ✅ Updated `lib/langchain/client.ts` to use Groq
-- ✅ Changed model to `llama-3.1-70b-versatile`
+- ✅ Changed model to `llama-3.3-70b-versatile` (latest!)
 - ✅ Updated environment variable to `GROQ_API_KEY`
 - ✅ Build passes with no errors
 - ℹ️ Kept `@google/generative-ai` for OCR (image text extraction only)

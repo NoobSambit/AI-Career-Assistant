@@ -39,7 +39,7 @@ export interface LangChainConfig {
  * Default configuration for LangChain models
  */
 const DEFAULT_CONFIG: Required<LangChainConfig> = {
-  modelName: 'llama-3.1-70b-versatile', // Groq's best model - 30 RPM free tier!
+  modelName: 'llama-3.3-70b-versatile', // Groq's latest model - 30 RPM free tier!
   temperature: 0.7,
   maxTokens: 8192,
   maxRetries: 3,

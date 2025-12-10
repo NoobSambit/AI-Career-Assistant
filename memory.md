@@ -1085,3 +1085,45 @@ npm error Conflicting peer dependency: @langchain/core@0.3.79
 - ✅ OCR functionality preserved for image uploads
 - ✅ All 3 agents use Groq for main AI processing
 - ✅ No dependency conflicts
+
+---
+
+## Groq Model Update - llama-3.3-70b-versatile (2024-12-10)
+
+### Critical Issue:
+Production deployment failed with error:
+```
+The model `llama-3.1-70b-versatile` has been decommissioned and is no longer supported.
+```
+
+### Root Cause:
+Groq deprecated the `llama-3.1-70b-versatile` model without warning during our migration.
+
+### Solution:
+Updated to the latest supported model: `llama-3.3-70b-versatile`
+
+### Changes:
+```typescript
+// Before
+modelName: 'llama-3.1-70b-versatile'
+
+// After  
+modelName: 'llama-3.3-70b-versatile'
+```
+
+### Benefits of llama-3.3-70b-versatile:
+- ✅ **Latest model** - More recent training data
+- ✅ **Better performance** - Improved reasoning capabilities
+- ✅ **Same rate limits** - 30 RPM on free tier
+- ✅ **Same speed** - Groq's LPU architecture
+- ✅ **Backward compatible** - Drop-in replacement
+
+### Files Modified:
+- ✅ `lib/langchain/client.ts` - Updated default model
+- ✅ `GROQ_SETUP.md` - Updated documentation
+- ✅ `memory.md` - Documented change
+
+### Status:
+- ✅ Build passes locally
+- ✅ Ready for Vercel deployment
+- ✅ Model actively supported by Groq

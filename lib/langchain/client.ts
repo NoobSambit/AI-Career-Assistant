@@ -1,4 +1,4 @@
-import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { ChatGroq } from '@langchain/groq';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 
 /**
@@ -31,22 +31,18 @@ export class LangChainQuotaError extends Error {
 export interface LangChainConfig {
   modelName?: string;
   temperature?: number;
-  maxOutputTokens?: number;
-  topP?: number;
-  topK?: number;
+  maxTokens?: number;
   maxRetries?: number;
 }
 
 /**
  * Default configuration for LangChain models
  */
-const DEFAULT_CONFIG: Required<Omit<LangChainConfig, 'maxRetries'>> & { maxRetries: number } = {
-  modelName: 'gemini-2.0-flash',
+const DEFAULT_CONFIG: Required<LangChainConfig> = {
+  modelName: 'llama-3.1-70b-versatile', // Groq's best model - 30 RPM free tier!
   temperature: 0.7,
-  maxOutputTokens: 8192,
-  topP: 0.95,
-  topK: 40,
-  maxRetries: 2,
+  maxTokens: 8192,
+  maxRetries: 3,
 };
 
 /**
@@ -58,14 +54,14 @@ let _clientCache: Map<string, BaseChatModel> = new Map();
  * Get or create a configured LangChain model instance
  * 
  * @param config - Optional configuration overrides
- * @returns Configured ChatGoogleGenerativeAI instance
+ * @returns Configured ChatGroq instance
  * @throws LangChainConfigError if API key is missing
  */
 export function getLangChainModel(config: LangChainConfig = {}): BaseChatModel {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   
   if (!apiKey) {
-    throw new LangChainConfigError('GEMINI_API_KEY environment variable is not set');
+    throw new LangChainConfigError('GROQ_API_KEY environment variable is not set');
   }
 
   // Merge with defaults
@@ -79,14 +75,12 @@ export function getLangChainModel(config: LangChainConfig = {}): BaseChatModel {
     return _clientCache.get(cacheKey)!;
   }
 
-  // Create new model instance
-  const model = new ChatGoogleGenerativeAI({
+  // Create new Groq model instance
+  const model = new ChatGroq({
     apiKey,
-    modelName: finalConfig.modelName,
+    model: finalConfig.modelName, // Groq uses 'model' instead of 'modelName'
     temperature: finalConfig.temperature,
-    maxOutputTokens: finalConfig.maxOutputTokens,
-    topP: finalConfig.topP,
-    topK: finalConfig.topK,
+    maxTokens: finalConfig.maxTokens,
     maxRetries: finalConfig.maxRetries,
   });
 
@@ -102,7 +96,7 @@ export function getLangChainModel(config: LangChainConfig = {}): BaseChatModel {
 export function getStructuredOutputModel(): BaseChatModel {
   return getLangChainModel({
     temperature: 0.1, // Low temperature for consistent structured output
-    maxOutputTokens: 8192,
+    maxTokens: 8192,
   });
 }
 
@@ -112,7 +106,7 @@ export function getStructuredOutputModel(): BaseChatModel {
 export function getCreativeModel(): BaseChatModel {
   return getLangChainModel({
     temperature: 0.9,
-    maxOutputTokens: 8192,
+    maxTokens: 8192,
   });
 }
 

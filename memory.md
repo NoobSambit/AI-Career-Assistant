@@ -1037,3 +1037,51 @@ const model = new ChatGroq({
 ### Emergency Resolution Time:
 **Total Time**: ~5 minutes from decision to deployment
 **Result**: User ready for interview prep without API rate limit issues! 🚀
+
+---
+
+## Vercel Build Fix (2024-12-10)
+
+### Issue:
+Vercel deployment was failing with dependency conflict:
+```
+npm error ERESOLVE could not resolve
+npm error peer @langchain/core@">=0.3.17 <0.4.0" from @langchain/google-genai@0.1.12
+npm error Conflicting peer dependency: @langchain/core@0.3.79
+```
+
+### Root Cause:
+- We upgraded `@langchain/core` to v1.x for Groq compatibility
+- Old `@langchain/google-genai` package required v0.3.x
+- Dependency conflict prevented npm install on Vercel
+
+### Solution:
+1. **Removed `@langchain/google-genai` package** (not needed for Groq)
+2. **Kept `@google/generative-ai` package** (still needed for OCR/image text extraction)
+3. **Updated package.json** to reflect correct dependencies
+
+### Final Dependencies:
+```json
+{
+  "@google/generative-ai": "^0.24.1",  // For OCR only
+  "@langchain/core": "^1.1.4",         // Upgraded for Groq
+  "@langchain/groq": "^1.0.2",         // Main LLM provider
+  "langchain": "^1.1.5"                // Core LangChain
+}
+```
+
+### Architecture:
+- **Main AI Processing**: Groq (Llama 3.1 70B) via LangChain
+- **OCR/Image Text**: Gemini Vision API (direct, not via LangChain)
+- **No Conflicts**: Both can coexist since they serve different purposes
+
+### Files Modified:
+- ✅ `package.json` - Removed @langchain/google-genai, kept @google/generative-ai
+- ✅ `GROQ_SETUP.md` - Updated to clarify dual API setup
+
+### Result:
+- ✅ Build passes locally (`npm run build` successful)
+- ✅ Build should now pass on Vercel
+- ✅ OCR functionality preserved for image uploads
+- ✅ All 3 agents use Groq for main AI processing
+- ✅ No dependency conflicts

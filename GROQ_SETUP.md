@@ -25,8 +25,12 @@ Your AI Career Assistant now uses **Groq** instead of Gemini for 3x better rate 
 Create a file named `.env.local` in the project root:
 
 ```bash
-# Copy this and replace with your actual key
+# Required: Groq API Key for main AI processing
 GROQ_API_KEY=gsk_your_actual_groq_api_key_here
+
+# Optional: Gemini API Key (only needed for OCR/image text extraction)
+# If you upload images, you'll need this. PDF/DOCX work without it.
+# GEMINI_API_KEY=your_gemini_key_here
 ```
 
 ### Step 3: Restart Dev Server
@@ -61,12 +65,14 @@ npm run dev
 - ✅ Changed model to `llama-3.1-70b-versatile`
 - ✅ Updated environment variable to `GROQ_API_KEY`
 - ✅ Build passes with no errors
+- ℹ️ Kept `@google/generative-ai` for OCR (image text extraction only)
 
 ### What Stayed the Same:
 - ✅ All 3 agents work exactly the same
 - ✅ No UI changes
 - ✅ Same quality output
 - ✅ All prompts and chains unchanged
+- ✅ OCR still uses Gemini (only for image uploads)
 
 ---
 
